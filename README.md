@@ -1,130 +1,115 @@
-# Override
+# tbk-淘宝客返利系统（nodejs v16）
 
-## 这个仓库什么也不能做，请不要盯着我。
+## 现有功能  
 
-### VSCode 配置：
+* 支持 淘宝、京东、拼多多转链([转链服务源码](/tbk-api-server/README.md)) ([api测试链接](https://tbk-api.xumeng.host/?url=%E3%80%90%E6%B7%98%E5%AE%9D%E3%80%91https://m.tb.cn/h.UKRgdJO?tk=Aa0UdRum9Sd%20CZ3457%20%E3%80%8C%E4%B8%80%E6%AC%A1%E6%80%A7%E9%A5%BA%E5%AD%90%E7%9B%92%E5%A4%96%E5%8D%96%E4%B8%93%E7%94%A8%E9%A4%90%E7%9B%92%E5%95%86%E7%94%A8%E9%80%9F%E5%86%BB%E6%B0%B4%E9%A5%BA%E7%9B%92%E9%A6%84%E9%A5%A8%E6%89%93%E5%8C%85%E7%9B%92%E5%88%86%E6%A0%BC%E5%8C%85%E8%A3%85%E7%9B%92%E5%AD%90%E3%80%8D%20%E7%82%B9%E5%87%BB%E9%93%BE%E6%8E%A5%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80%20%E6%88%96%E8%80%85%20%E6%B7%98%E5%AE%9D%E6%90%9C%E7%B4%A2%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80))
+* 微信bot(是微信，不是公众号，当然公众号也实现了的)自动回复消息 转链、绑定订单(基于wechaty) ([微信bot源码](/wechat/README.md))
+* 返利系统订单管理后台（vue2、element-ui、express、mongoose...）(已开源) ([管理后台](https://github.com/pea-cake/tbk-manage.git))
+* ...
 
-```json
-    "github.copilot.advanced": {
-        "debug.overrideCAPIUrl": "http://127.0.0.1:8181/v1",
-        "debug.overrideProxyUrl": "http://127.0.0.1:8181",
-        "debug.chatOverrideProxyUrl": "http://127.0.0.1:8181/v1/chat/completions",
-        "authProvider": "github-enterprise"
+## 如何运行和部署
+
+### 运行
+
+1. 配置（./config/index.js） 阿里联盟、京东联盟、多多客 返佣账号appkey appsecret
+
+    ```text
+    JDconfig: {
+        // 京东联盟
+        appKey: "",
+        appSecret: "",
     },
-    "github-enterprise.uri": "https://cocopilot.org",
-```
+    TBconfig: {
+        // 阿里联盟, 获取配置看这里https://github.com/pea-cake/tbk/issues/5
+        appkey: "",
+        appsecret: "",
+        adzone_id: "", // 推广位pid 'mm_123_456_789' 的789就是adzone_id
+    },
+    PDDconfig: {
+        // 多多客
+        clientId: "",
+        clientSecret: "",
+        pid: "", // 推广位pid
+    }
+    ```
 
-### JetBrains等 配置：
+2. 安装mongodb数据库（自行查找方法）  
 
-按照 coco dash 页面截图配置后，执行对应系统的脚本后重启IDE：
-* `scripts/install.sh` 适用于 `macOS` 和 `Linux`
-* `scripts/install-all-users.vbs` 适用于 `Windows`，为电脑上所有用户配置，需要有管理员权限。
-* `scripts/install-current-user.vbs` 适用于 `Windows`，为当前用户配置，无需管理员权限。
-* `scripts/uninstall` 相关脚本与之对应，为卸载配置。
+3. 安装node环境（自行查找方法）  
 
-其中 `http://127.0.0.1:8181` 是你启动的 `override` 服务地址。
+4. 安装所需包  
 
-### config.json 配置
+    ```bash
+    npm i
+    ```
 
-```json
-{
- "bind": "127.0.0.1:8181",
- "proxy_url": "",
- "timeout": 600,
- "codex_api_base": "https://api-proxy.oaipro.com/v1",
- "codex_api_key": "sk-xxx",
- "codex_api_organization": "",
- "codex_api_project": "",
- "codex_max_tokens": 500,
- "code_instruct_model": "gpt-3.5-turbo-instruct",
- "chat_api_base": "https://api-proxy.oaipro.com/v1",
- "chat_api_key": "sk-xxx",
- "chat_api_organization": "",
- "chat_api_project": "",
- "chat_max_tokens": 4096,
- "chat_model_default": "gpt-4o",
- "chat_model_map": {},
- "chat_locale": "zh_CN",
- "auth_token": ""
-}
+5. 运行转链api服务  
 
-```
+    ```bash
+    npm run server
+    ```
 
-`organization` 和 `project` 除非你有，且知道怎么回事再填。
+6. 另启动一个终端，运行微信bot服务  
 
-`chat_model_map` 是个模型映射的字典。会将请求的模型映射到你想要的，如果不存在映射，则使用 `chat_model_default` 。
+    ```bash
+    npm run wechat
+    ```
 
-`codex_max_tokens` 可以设置为你希望的最大Token数，你设置的时候最好知道自己在做什么。代码生成通常使用 `500` 即可。
+7. 扫码登录微信即可
+8. 还可使用pm2 运行
 
-`chat_max_tokens` 可以设置为你希望的最大Token数，你设置的时候最好知道自己在做什么。`gpt-4o` 输出最大为 `4096`
+    ```bash
+    npm install pm2 -g
+    pm2 start tbk-api-server/index.js
+    pm2 start wechat/index.js
+    ```
 
-可以通过 `OVERRIDE_` + 大写配置项作为环境变量，可以覆盖 `config.json` 中的值。例如：`OVERRIDE_CODEX_API_KEY=sk-xxxx`
+### 部署
 
-### DeepSeek Coder 设置
-如果你希望使用 DeepSeek Coder FIM 来进行代码补全，着重修改以下配置：
+## docker
 
-```json
-  "codex_api_base": "https://api.deepseek.com/beta/v1",
-  "codex_api_key": "sk-xxx",
-  "code_instruct_model": "deepseek-coder",
-```
+1. 已经安装docker
+2. 完成配置（config/index.js）
+3.  
+    * DockerFile  
 
-### 本地大模型设置
-1. 安装ollama 
-2. ollama run stable-code:code  (这个模型较小，大部分显卡都能跑)  
- 或者你的显卡比较高安装这个：ollama run stable-code:3b-code-fp16
-3. 修改config.json里面的codex_api_base为http://localhost:11434/v1/chat
-4. 修改code_instruct_model为你的模型名称，stable-code:code或者stable-code:3b-code-fp16
-5. 剩下的就按照正常流程走即可。
-6. 如果调不通，请确认http://localhost:11434/v1/chat可用。
-        
-### 重要说明
-`codex_max_tokens` 工作并不完美，已经移除。**JetBrains IDE 完美工作**，`VSCode` 需要执行以下脚本Patch之：
+    ```bash
+    docker build -t tbk:v1 .
+    docker run -it tbk:v1 /bin/bash
+    ```
 
-* macOS `sed -i '' -E 's/\.maxPromptCompletionTokens\(([a-zA-Z0-9_]+),([0-9]+)\)/.maxPromptCompletionTokens(\1,2048)/' ~/.vscode/extensions/github.copilot-*/dist/extension.js`
-* Linux `sed -E 's/\.maxPromptCompletionTokens\(([a-zA-Z0-9_]+),([0-9]+)\)/.maxPromptCompletionTokens(\1,2048)/' ~/.vscode/extensions/github.copilot-*/dist/extension.js`
-* Windows 可以用如下的python脚本进行替换
-* 因为是Patch，所以：**Copilot每次升级都要执行一次**。
-* 具体原因是客户端需要根据 `max_tokens` 精密计算prompt，后台删减会有问题。
+    * docker远程仓库  
 
-```
-# github copilot extention replace script
-import re
-import glob
-import os
+    ```bash
+    docker pull peacaker/tbk:1.0.0
+    docker run -it peacaker/tbk:1.0.0 /bin/bash
+    ```
 
-file_paths = glob.glob(os.getenv("USERPROFILE") + r'\.vscode\extensions\github.copilot-*\dist\extension.js')
-if file_paths == list():
-    print("no copilot extension found")
-    exit()
+4. 扫码登录微信即可
 
-pattern = re.compile(r'\.maxPromptCompletionTokens\(([a-zA-Z0-9_]+),([0-9]+)\)')
-replacement = r'.maxPromptCompletionTokens(\1,2048)'
+## 🧐🧐🧐
 
-for file_path in file_paths:
-    with open(file_path, 'r', encoding="utf-8") as file:
-        content = file.read()
-    
-    new_content = pattern.sub(replacement, content)
-    if new_content == content:
-        print("no match found in " + file_path)
-        continue
-    else:
-        print("replaced " + file_path)
-    
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(new_content)
+* 这是一个能赚点小钱，即使不能赚钱，也能方便你省钱的系统  
+* 已全部开源，欢迎使用，欢迎star，也期待你的添砖加瓦
+* ...
 
-print("replace finish")
-```
+## 体验
+1. 转链api体验：https://tbk-api.xumeng.host/?url=商品链接.  
+2. 微信扫码(风控暂时停用，可能由于玩chatgpt多了):  
+<img src="https://user-images.githubusercontent.com/58544092/187089988-28c60792-83e5-4611-bde9-7ff3cfe93aec.jpg" width="200px" height="200px"/>  
 
-### 其他说明
-1. 理论上，Chat 部分可以使用 `chat2api` ，而 Codex 代码生成部分则不太适合使用 `chat2api` 。
-2. 代码生成部分做过延时生成和客户端 Cancel 处理，很有效节省你的Token。
-3. 项目基于 `MIT` 协议发布，你可以修改，请保留原作者信息。
-4. 有什么问题，请在论坛 https://linux.do 讨论，欢迎PR。
+## 展示  
 
-### Star History
+微信消息部分：  
+<img src="https://user-images.githubusercontent.com/58544092/185220186-c013651e-0640-4c22-95d6-15bf7f0de059.png" width="200px" height="400px"/> <img src="https://user-images.githubusercontent.com/58544092/185220657-78e275ed-1f36-49b6-a2f5-4dcd0c60f141.png" width="200px" height="400px"/> <img src="https://user-images.githubusercontent.com/58544092/185222647-693ffcb3-431d-4c73-bce9-7006764d65f2.png" width="200px" height="400px"/>  
 
-[![Star History Chart](https://api.star-history.com/svg?repos=linux-do/override&type=Date)](https://star-history.com/#linux-do/override&Date)   
+管理系统截图：  
 
+![image](https://user-images.githubusercontent.com/58544092/197322244-3db634f8-fdce-491c-8339-6ea9bdfdab75.png)
+
+![image](https://user-images.githubusercontent.com/58544092/197322205-74d8f0e6-9798-43c9-af7b-a567a3144fde.png)
+...
+
+## 感谢
+
+* 待添加
